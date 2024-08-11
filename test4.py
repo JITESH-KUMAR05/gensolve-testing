@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Load the uploaded image
-img_path = "input.jpg"  # Change this to the path of your input image
+img_path = "circle.jpg"  # Change this to the path of your input image
 img = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
 
 # Check if the image was loaded successfully

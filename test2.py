@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Load the uploaded image
-image_path = "circle.jpg"
+image_path = "star.jpg"
 img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
 img = cv2.resize(img, (128, 128))  # Increase resolution
 
