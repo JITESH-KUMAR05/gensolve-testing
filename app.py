@@ -167,7 +167,7 @@ def generate_shape_image(shape, img_size=(128, 128)):
     return img
 
 # Load and preprocess the uploaded image
-img_path = "star.jpg"  # Use the correct path of your uploaded image
+img_path = "circle.jpg"  # Use the correct path of your uploaded image
 img = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
 
 if img is None:
@@ -199,3 +199,76 @@ plt.axis('off')
 
 plt.show()
 
+
+# 3rd part
+
+
+# Preprocess the image: thresholding, blurring, and edge detection
+def preprocess_image(img):
+    _, thresholded = cv2.threshold(img, 128, 255, cv2.THRESH_BINARY)
+    blurred = cv2.GaussianBlur(thresholded, (5, 5), 0)
+    edges = cv2.Canny(blurred, 30, 100)
+    return edges
+
+# Function to interpolate and complete the curve
+def complete_curve(img, contour):
+    # Fit an ellipse around the contour to approximate the shape
+    if len(contour) >= 5:  # FitEllipse needs at least 5 points
+        ellipse = cv2.fitEllipse(contour)
+        cv2.ellipse(img, ellipse, (128,), 1)
+
+    # Attempt to close any open contours by connecting endpoints
+    if cv2.isContourConvex(contour):
+        hull = cv2.convexHull(contour)
+        cv2.drawContours(img, [hull], -1, (128,), 1)
+    else:
+        # Find endpoints of the curve and connect them
+        start_point = tuple(contour[0][0])
+        end_point = tuple(contour[-1][0])
+        cv2.line(img, start_point, end_point, (128,), 1)
+
+    return img
+
+# Function to complete and correct curves
+def complete_incomplete_curves(img):
+    edges = preprocess_image(img)
+    
+    # Find contours in the image
+    contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    
+    if len(contours) == 0:
+        return img  # No contours found
+    
+    img_completed = img.copy()
+    
+    for contour in contours:
+        img_completed = complete_curve(img_completed, contour)
+    
+    return img_completed
+
+# Load and preprocess the uploaded image
+img_path = "incomplete-circle.png"  # Use the correct path of your uploaded image
+img = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
+
+if img is None:
+    print(f"Error: Unable to open image file '{img_path}'. Please check the file path and try again.")
+    exit()
+
+img = cv2.resize(img, (128, 128))  # Resize the image for consistent processing
+
+# Complete the incomplete curves
+completed_img = complete_incomplete_curves(img)
+
+# Display the original and completed images
+plt.figure(figsize=(10, 5))
+plt.subplot(1, 2, 1)
+plt.title("Original Incomplete Image")
+plt.imshow(img, cmap='gray')
+plt.axis('off')
+
+plt.subplot(1, 2, 2)
+plt.title("Completed Image")
+plt.imshow(completed_img, cmap='gray')
+plt.axis('off')
+
+plt.show()
